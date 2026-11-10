@@ -1,0 +1,49 @@
+# Safe defaults: BSV testnet, broadcast and funding import off.
+# The process stays paused for on-chain work until you opt in.
+#
+# Create ./secrets/server_private_key (one line, 64 hex chars or WIF) before
+# starting. Do not commit that file. The installer generates it for you.
+#
+# Mainnet broadcast requires an explicit override, for example:
+#   NETWORK=main ALLOW_MAINNET_BROADCAST=true BROADCAST=true IMPORT_FUNDING=true
+# docker compose up -d
+# The binary refuses mainnet broadcast unless ALLOW_MAINNET_BROADCAST=true.
+
+services:
+  bsv-noise:
+    build: .
+    image: bsv-noise:local
+    user: "65532:65532"
+    environment:
+      LISTEN: "0.0.0.0:8741"
+      DATA_DIR: /data
+      NETWORK: ${NETWORK:-test}
+      BROADCAST: ${BROADCAST:-false}
+      ALLOW_MAINNET_BROADCAST: ${ALLOW_MAINNET_BROADCAST:-false}
+      IMPORT_FUNDING: ${IMPORT_FUNDING:-false}
+      CONTROLLED_RECIPIENTS: "true"
+      SERVER_PRIVATE_KEY_FILE: /run/secrets/server_private_key
+      TARGET_TPS: ${TARGET_TPS:-0.5}
+      MESSAGE_BOX_URL: ${MESSAGE_BOX_URL:-https://messagebox.bsvblockchain.tech}
+      MESSAGE_BOX: ${MESSAGE_BOX:-payment_inbox}
+      UTXO_STRATEGY: ${UTXO_STRATEGY:-privacy}
+      AMOUNT_DISTRIBUTION: ${AMOUNT_DISTRIBUTION:-realistic}
+    ports:
+      - "127.0.0.1:8741:8741"
+    volumes:
+      - ${DATA_MOUNT:-noise-data}:/data
+    secrets:
+      - server_private_key
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/brc29-loadgen", "health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+secrets:
+  server_private_key:
+    file: ./secrets/server_private_key
+
+volumes:
+  noise-data:

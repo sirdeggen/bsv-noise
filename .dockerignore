@@ -1,0 +1,16 @@
+.git
+data
+secrets
+bin
+backups
+*.sqlite
+*.md
+console/node_modules
+console/dist
+scripts
+grokbot
+deploy
+install.sh
+agent-tools
+.env
+.env.example

@@ -1,0 +1,9 @@
+{
+  "name": "bsv-noise-register-handle",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@bsv/sdk": "^1.7.3"
+  }
+}

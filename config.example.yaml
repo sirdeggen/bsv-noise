@@ -1,0 +1,59 @@
+# BSV noise / covering-fire service.
+# This file is not a place for SERVER_PRIVATE_KEY. Pass the key in the
+# environment or in SERVER_PRIVATE_KEY_FILE.
+#
+# Default mode is dry-run: no Message Box calls and no broadcast.
+# Mainnet broadcast also requires allow_mainnet_broadcast: true.
+
+network: test
+listen: 127.0.0.1:8741
+data_dir: data
+originator: bsv-noise.local
+
+broadcast: false
+allow_mainnet_broadcast: false
+import_funding: false
+# Required before broadcast, and before naming recipient identity keys.
+# Generated recipient keys are controlled by this process.
+controlled_recipients: true
+
+# PeerPay delivers to this box on a Message Box host. It is not a P2PKH address.
+message_box_url: https://messagebox.bsvblockchain.tech
+message_box: payment_inbox
+sweep_interval: 15s
+
+target_tps: 0.5
+min_amount: 100
+max_amount: 2000
+amount_distribution: realistic # realistic | uniform | log_uniform
+seed: 0 # 0 draws a fresh seed. A non-zero seed reproduces the schedule.
+
+min_fee_sat: 1
+max_fee_sat: 2000
+sat_per_kb: 100
+daily_spend_cap: 100000000
+daily_fee_cap: 1000000
+reserve_sat: 50000
+
+max_in_flight: 4
+confirm_after: 2s
+max_utxos: 128
+min_utxos: 1
+max_inputs: 8
+
+# Used only while broadcast and import_funding are both false.
+sim_balance: 10000000
+generate_recipients: 1
+# recipient_identity_keys: "02abc...,03def..."
+utxo_strategy: privacy # privacy | throughput (throughput requires broadcast)
+
+dust_sat: 1000
+target_change_outputs: 8
+min_desired_utxo_value: 1000
+
+max_payments: 0
+shutdown_timeout: 10s
+log_level: info
+# Leave unset to use built-in Arcade + WhatsOnChain. Do not point this at TAAL
+# unless you intend to override the primary endpoint.
+# arc_url: https://arcade.example.invalid

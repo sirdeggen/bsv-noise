@@ -1,0 +1,14 @@
+# HTTPS reverse proxy for the BSV noise console.
+# Replace noise.example.com with your domain. Point an A (or AAAA) record
+# at this VPS before reloading Caddy so the ACME certificate can be issued.
+#
+# The app listens only on 127.0.0.1:8741. Do not publish port 8741 on
+# 0.0.0.0 — Caddy should be the only public entry point.
+#
+# Copy this file to /etc/caddy/Caddyfile (or import it from there) and run:
+#   sudo systemctl reload caddy
+
+noise.example.com {
+	encode gzip
+	reverse_proxy 127.0.0.1:8741
+}
