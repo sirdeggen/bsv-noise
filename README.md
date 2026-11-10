@@ -217,4 +217,4 @@ cmd/list-inbox             read-only Message Box inspector
 
 ## License
 
-[Open BSV License Version 5](./LICENSE), the same license used by the BSV Association SDKs and by other BSV work under this account. The software, and any software derived from it, must only be used on the BSV blockchains (main and test), as defined in that license.
+[Apache License 2.0](./LICENSE). Copyright 2026 deggen.

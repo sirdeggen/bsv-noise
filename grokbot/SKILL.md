@@ -133,3 +133,5 @@ Details and known limitations (single-wallet linkability, Benford change not yet
 ## What not to change
 
 Do not loosen the mainnet opt-in flags, do not commit `.env` or `secrets/`, and do not "helpfully" switch `UTXO_STRATEGY` to throughput or raise caps without the owner asking. This skill deploys and operates the published tree; it is not a license to redesign the wallet.
+
+This repository is licensed under the Apache License 2.0. Copyright 2026 deggen.
