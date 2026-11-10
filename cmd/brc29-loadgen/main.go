@@ -141,7 +141,7 @@ func serve() error {
 			log.Warn("import_funding calls InternalizeAction. An unproven funding transaction can be rebroadcast by the wallet. This is not a dry run.")
 		}
 		if rt.Broadcast {
-			log.Warn("broadcast is on. Payments are real BSV transactions to controlled recipients. They are synthetic self-controlled transfers, not commerce.")
+			log.Warn("broadcast is on. Payments are real BSV transactions to controlled recipients. They are self-controlled transfers, not evidence of commerce.")
 		}
 	}
 
@@ -179,7 +179,7 @@ func serve() error {
 	} else if rt.ImportFunding {
 		mode = "import-only"
 	}
-	log.Info("brc29 synthetic load generator",
+	log.Info("bsv noise service",
 		"mode", mode,
 		"network", rt.Network,
 		"identity_key", rt.Identity,

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Install the BSV noise / covering-fire service on a fresh Ubuntu LTS VPS.
+# Install the BSV noise service on a fresh Ubuntu LTS VPS.
+# A trickle of ordinary-looking payments so real commerce is a needle in a haystack.
+# Privacy, not anonymity — counterparties know each other, and lawful tracing still works.
 #
 # Safe defaults: BSV testnet, broadcast off, funding import off
 # ("paused until you fund and opt in"). Mainnet broadcast requires explicit flags.
@@ -268,6 +270,10 @@ fi
 echo
 echo "=============================================="
 echo " BSV noise service is installed"
+echo " A trickle of ordinary-looking payments so real"
+echo " commerce is a needle in a haystack."
+echo " Privacy, not anonymity — both parties know who"
+echo " they're dealing with, and traditional tracing still works."
 echo "=============================================="
 echo " Install dir:     $INSTALL_DIR"
 echo " Network:         $NETWORK"

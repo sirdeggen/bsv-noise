@@ -1,4 +1,5 @@
-# BSV noise / covering-fire service.
+# BSV Noise — a trickle of ordinary-looking payments so real commerce
+# is a needle in a haystack. Privacy, not anonymity.
 # This file is not a place for SERVER_PRIVATE_KEY. Pass the key in the
 # environment or in SERVER_PRIVATE_KEY_FILE.
 #

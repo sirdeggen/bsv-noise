@@ -31,7 +31,7 @@ func sampleStats() Stats {
 			ID: "p-1", TxID: "sim:p-1", Amount: 100, State: "confirmed", DryRun: true,
 			Created: time.Unix(1, 0).UTC(),
 		}},
-		Note: "A blanket of random payments that real activity can hide under.",
+		Note: "A trickle of ordinary-looking payments so real commerce is a needle in a haystack.",
 	}
 }
 

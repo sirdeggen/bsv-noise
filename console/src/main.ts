@@ -14,6 +14,8 @@ app.innerHTML = `
     </div>
     <div class="flags" id="flags"></div>
   </header>
+  <p class="lede">A trickle of ordinary-looking payments so real commerce is a needle in a haystack. This is a temporary measure until everyday BSV cash adoption provides the traffic on its own.</p>
+  <p class="privacy-note"><strong>Privacy, not anonymity.</strong> Both parties know who they're dealing with, and traditional tracing still works.</p>
   <p class="note" id="note">Loading the daemon…</p>
   <section class="grid" id="cards"></section>
   <section class="split">
@@ -68,7 +70,7 @@ function render(stats: Stats): void {
     pill("health", health),
     pill("import", stats.import_funding ? "on" : "off"),
   ].join("");
-  note.textContent = stats.note;
+  note.textContent = "";
   const sweep = stats.funding.last_sweep
     ? new Date(stats.funding.last_sweep).toLocaleString()
     : "no sweep yet";

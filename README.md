@@ -1,12 +1,20 @@
 # BSV Noise
 
-A self-hosted BSV service that produces a background of on-chain BRC-29 micropayments — **covering fire** around real economic activity, not a synthetic-load benchmark and not a way to fake sales volume.
-
-Payments go only to recipient keys this process generated, or to identity keys you explicitly mark as controlled. Recycling satoshis between keys you control is a self-controlled transfer. It is not evidence of commerce.
+A self-hosted BSV service that keeps a trickle of ordinary-looking BRC-29 payments moving on chain — covering fire, a blanket of background traffic so real commerce is a needle in a haystack.
 
 The process is a **dry-run by default**. It does not broadcast, and it does not call a Message Box host, until you turn those switches on. Mainnet broadcast is an explicit opt-in (`NETWORK=main` **and** `ALLOW_MAINNET_BROADCAST=true` **and** `BROADCAST=true`).
 
 A health console is served at `/`. Internal command names may still say `brc29-loadgen`; that is the binary inside the image, not the product name.
+
+## Why
+
+BSV's privacy comes from pseudonymity through obscurity. A payment is a needle in a haystack, which makes it impractical for a third party to follow someone's spending. That is the privacy this service is here to support.
+
+Privacy means both parties know who they are doing business with, and traditional tracing and police work can still find bad actors. Anonymity — not knowing who you are dealing with, and losing that tracing ability — is a different thing, and not what this service is for.
+
+While everyday use of BSV as cash is still growing, this service provides a trickle of payment-like noise so real commerce is indistinguishable, to a third party, from the background traffic. It is a temporary measure until organic adoption provides that haystack on its own.
+
+Payments go only to recipient keys this process generated, or to identity keys you explicitly mark as controlled. Recycling satoshis between keys you control is a self-controlled transfer; it is not evidence of commerce.
 
 ## What you run
 
@@ -190,7 +198,7 @@ To restore data, stop the container, copy `data/` and `secrets/` back from the b
 - **Confirmed can lag seen.** "Seen" frees in-flight once Arcade has the transaction on the network. "Confirmed" waits for a merkle path (Arcade SSE / `CheckForProofs`, with a poll fallback). Older unproven rows can sit without a path for a long time even while new payments confirm.
 - **GorillaPool Arcade is only a partial failover**, for the toolbox reason above.
 - **One process, one box, one SQLite wallet.** There is no built-in multi-node HA. The wallet DSN uses a single open connection and a busy timeout; do not point a second writer at the same files.
-- The health document still carries an internal `synthetic` marker so the container health check can identify this binary. That is a build marker, not a claim about the product framing.
+- The health document still carries an internal build marker so the container health check can identify this binary. That marker is not a product name.
 
 ## Repository layout
 

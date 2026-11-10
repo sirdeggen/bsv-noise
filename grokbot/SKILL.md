@@ -5,7 +5,9 @@ description: Deploy or operate a self-hosted BSV noise / covering-fire service o
 
 # BSV Noise — deploy and operate
 
-This skill is for installing **this** repository on a VPS the owner controls, then helping them fund and run it. The product is a background of on-chain BRC-29 micropayments (covering fire around real economic activity). It is not a synthetic-load benchmark and not a way to present recycled coins as sales.
+This skill is for installing **this** repository on a VPS the owner controls, then helping them fund and run it. The product keeps a trickle of ordinary-looking BRC-29 payments moving on chain — covering fire, a blanket of background traffic so real commerce is a needle in a haystack. It is a temporary measure until everyday BSV cash adoption provides that traffic on its own.
+
+This is privacy, not anonymity. Both parties know who they are dealing with, and traditional tracing still works. Do not describe the service as a way to hide counterparties or to present recycled coins as sales.
 
 Keep this skill generic. Do not hard-code another operator's domain, IP, identity public key, or wallet.
 
@@ -73,7 +75,7 @@ curl -fsS http://127.0.0.1:8741/api/stats
 docker compose --env-file /opt/bsv-noise/.env -f /opt/bsv-noise/docker-compose.yml ps
 ```
 
-`/healthz` must be HTTP 200 and include `identity_key`. The document may also include an internal `synthetic` marker used by the container health check — that is a build marker, not a reason to describe the product as synthetic load.
+`/healthz` must be HTTP 200 and include `identity_key`. The document may also include an internal build marker used by the container health check — that is how the binary identifies itself, not a product name.
 
 Report to the owner: console URL, identity public key, network, whether broadcast and import are on, and any health error. Do not report the private key.
 

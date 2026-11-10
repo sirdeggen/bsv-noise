@@ -72,10 +72,34 @@ h2 {
 
 .pill strong { font-weight: 600; }
 
+.lede {
+  margin: 0 0 8px;
+  max-width: 70ch;
+  font-size: 17px;
+  line-height: 1.45;
+}
+
+.privacy-note {
+  margin: 0 0 18px;
+  color: var(--muted);
+  max-width: 70ch;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.privacy-note strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
 .note {
   margin: 0 0 18px;
   color: var(--muted);
   max-width: 70ch;
+}
+
+.note:empty {
+  display: none;
 }
 
 .grid {

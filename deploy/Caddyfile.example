@@ -1,4 +1,4 @@
-# HTTPS reverse proxy for the BSV noise console.
+# HTTPS reverse proxy for the BSV noise console (privacy in a haystack, not anonymity).
 # Replace noise.example.com with your domain. Point an A (or AAAA) record
 # at this VPS before reloading Caddy so the ACME certificate can be issued.
 #

@@ -130,7 +130,7 @@ func New(opt Options) (*Engine, error) {
 		Broadcast:     opt.Runtime.Broadcast,
 		ImportFunding: opt.Runtime.ImportFunding,
 		Ready:         true,
-		Note:          "A blanket of random payments that real activity can hide under.",
+		Note:          "A trickle of ordinary-looking payments so real commerce is a needle in a haystack.",
 		Toolbox:       "github.com/bsv-blockchain/go-wallet-toolbox v0.191.4",
 		GoSDK:         "github.com/bsv-blockchain/go-sdk v1.7.3",
 	}
