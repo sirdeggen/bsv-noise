@@ -382,3 +382,67 @@ func TestPollNetworkStatusFallback(t *testing.T) {
 		t.Fatalf("state %+v ok=%v err=%v", p, ok, err)
 	}
 }
+
+func TestPollNetworkStatusWhatsOnChainFallback(t *testing.T) {
+	st, err := store.Open(filepath.Join(t.TempDir(), "loadgen.sqlite"), true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer st.Close()
+	const minedTx = "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+	const otherTx = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+	liveAccepted(t, st, "p-arcade-miss", minedTx)
+	liveAccepted(t, st, "p-also-miss", otherTx)
+	// Arcade knows nothing (404s / empty) and even returns a transport error,
+	// which is what happened when the four in-flight slots filled up.
+	watch := &fakeWatcher{err: context.DeadlineExceeded}
+	eng := testEngineWithStore(t, st, watch)
+	var asked []string
+	eng.wocQuery = func(_ context.Context, network string, txids []string) ([]arcadestatus.Event, error) {
+		asked = append([]string{}, txids...)
+		if network == "" {
+			t.Fatal("expected a network")
+		}
+		return []arcadestatus.Event{{TxID: minedTx, Status: "MINED"}, {TxID: otherTx, Status: "SEEN_ON_NETWORK"}}, nil
+	}
+	if err := eng.pollNetworkStatus(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if len(asked) != 2 {
+		t.Fatalf("woc queried %v", asked)
+	}
+	c, err := st.Counts()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c.InFlight != 0 || c.Seen != 2 {
+		t.Fatalf("WoC fallback should free both slots: %+v", c)
+	}
+}
+
+func TestPollNetworkStatusSkipsWhatsOnChainWhenArcadeFrees(t *testing.T) {
+	st, err := store.Open(filepath.Join(t.TempDir(), "loadgen.sqlite"), true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer st.Close()
+	const minedTx = "abababababababababababababababababababababababababababababababab"
+	liveAccepted(t, st, "p-arcade", minedTx)
+	watch := &fakeWatcher{query: []arcadestatus.Event{{TxID: minedTx, Status: "SEEN_ON_NETWORK"}}}
+	eng := testEngineWithStore(t, st, watch)
+	eng.wocQuery = func(context.Context, string, []string) ([]arcadestatus.Event, error) {
+		t.Fatal("should not ask WhatsOnChain when Arcade already freed the slot")
+		return nil, nil
+	}
+	if err := eng.pollNetworkStatus(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	c, err := st.Counts()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c.InFlight != 0 || c.Seen != 1 {
+		t.Fatalf("counts %+v", c)
+	}
+}
+

@@ -108,14 +108,45 @@ func (e *Engine) pollNetworkStatus(ctx context.Context) error {
 	for _, p := range pending {
 		txids = append(txids, p.TxID)
 	}
-	events, err := e.watch.QueryNetworkStatus(ctx, txids)
-	if err != nil {
-		return err
+	events, arcadeErr := e.watch.QueryNetworkStatus(ctx, txids)
+	if arcadeErr != nil {
+		e.log.Warn("arcade status poll", "error", arcadeErr.Error())
 	}
+	resolved := map[string]bool{}
 	for _, ev := range events {
+		e.applyNetworkEvent(ctx, ev)
+		if ev.TxID != "" && (arcadestatus.FreesInFlight(ev.Status) || arcadestatus.IsRejected(ev.Status)) {
+			resolved[ev.TxID] = true
+		}
+	}
+	var missing []string
+	for _, txid := range txids {
+		if !resolved[txid] {
+			missing = append(missing, txid)
+		}
+	}
+	if len(missing) == 0 {
+		return nil
+	}
+	woc, wocErr := e.queryWhatsOnChain(ctx, missing)
+	if wocErr != nil {
+		if arcadeErr != nil && len(events) == 0 {
+			return arcadeErr
+		}
+		e.log.Warn("whatsonchain status poll", "error", wocErr.Error())
+		return nil
+	}
+	for _, ev := range woc {
 		e.applyNetworkEvent(ctx, ev)
 	}
 	return nil
+}
+
+func (e *Engine) queryWhatsOnChain(ctx context.Context, txids []string) ([]arcadestatus.Event, error) {
+	if e != nil && e.wocQuery != nil {
+		return e.wocQuery(ctx, e.rt.Network, txids)
+	}
+	return arcadestatus.QueryWhatsOnChain(ctx, e.rt.Network, txids, nil)
 }
 
 func (t *rebroadcastTracker) should(txid string, now time.Time) bool {

@@ -14,6 +14,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/sirdeggen/bsv-noise/internal/arcadestatus"
 	"github.com/sirdeggen/bsv-noise/internal/brc29pay"
 	"github.com/sirdeggen/bsv-noise/internal/config"
 	"github.com/sirdeggen/bsv-noise/internal/fee"
@@ -41,6 +42,7 @@ type Engine struct {
 	live       *live.Sender
 	watch      NetworkWatcher
 	retry      *rebroadcastTracker
+	wocQuery   func(context.Context, string, []string) ([]arcadestatus.Event, error)
 	log        *slog.Logger
 	poll       time.Duration
 
