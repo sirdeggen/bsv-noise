@@ -1,10 +1,12 @@
 package httpserver
 
 import (
+	"bytes"
 	"crypto/subtle"
 	_ "embed"
 	"html"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -84,13 +86,54 @@ type RecentTx struct {
 
 func (s *Server) console(w http.ResponseWriter, r *http.Request) {
 	if !s.consoleAuthorized(r) {
-		s.loginPage(w, "")
+		s.loginPage(w, r, "")
 		return
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-store")
-	_, _ = w.Write(consoleHTML)
+	_, _ = w.Write(absoluteOG(consoleHTML, r))
 }
+
+// origin returns scheme://host for link-preview URLs, or "" when the Host
+// header is not a plain hostname (it is reflected into HTML).
+func origin(r *http.Request) string {
+	host := r.Host
+	if host == "" || len(host) > 253 {
+		return ""
+	}
+	for _, c := range host {
+		ok := c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || strings.ContainsRune(".-:[]", c)
+		if !ok {
+			return ""
+		}
+	}
+	scheme := "http"
+	if r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https" {
+		scheme = "https"
+	}
+	return scheme + "://" + host
+}
+
+// absoluteOG makes the OG/Twitter image URL absolute; crawlers such as
+// Facebook and LinkedIn ignore relative og:image values.
+func absoluteOG(page []byte, r *http.Request) []byte {
+	base := origin(r)
+	if base == "" {
+		return page
+	}
+	abs := []byte(`content="` + base + `/og.jpg"`)
+	page = bytes.ReplaceAll(page, []byte(`content="./og.jpg"`), abs) // as emitted by Vite
+	return bytes.ReplaceAll(page, []byte(`content="/og.jpg"`), abs)
+}
+
+const loginHead = `<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0e0c0a">
+<link rel="icon" href="/favicon.ico" sizes="48x48"><link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="website"><meta property="og:site_name" content="BSV Noise">
+<meta property="og:title" content="Noise — covering fire for everyday BSV payments">
+<meta property="og:description" content="A trickle of ordinary-looking payments, so real commerce is a needle in a haystack. Privacy, not anonymity.">
+<meta property="og:image" content="/og.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="/og.jpg">`
 
 func (s *Server) stats(w http.ResponseWriter, r *http.Request) {
 	if !s.consoleAuthorized(r) {
@@ -115,11 +158,11 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := r.ParseForm(); err != nil {
-		s.loginPage(w, "The form could not be read.")
+		s.loginPage(w, r, "The form could not be read.")
 		return
 	}
 	if !tokenMatch(r.PostFormValue("token"), s.ConsoleToken) {
-		s.loginPage(w, "That token was not accepted.")
+		s.loginPage(w, r, "That token was not accepted.")
 		return
 	}
 	http.SetCookie(w, &http.Cookie{
@@ -163,7 +206,7 @@ func tokenMatch(got, want string) bool {
 	return subtle.ConstantTimeCompare([]byte(got), []byte(want)) == 1
 }
 
-func (s *Server) loginPage(w http.ResponseWriter, message string) {
+func (s *Server) loginPage(w http.ResponseWriter, r *http.Request, message string) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-store")
 	w.WriteHeader(http.StatusUnauthorized)
@@ -171,7 +214,7 @@ func (s *Server) loginPage(w http.ResponseWriter, message string) {
 	if message != "" {
 		msg = "<p>" + html.EscapeString(message) + "</p>"
 	}
-	_, _ = w.Write([]byte(`<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Console token</title></head><body>
+	_, _ = w.Write([]byte(`<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Console token</title>` + string(absoluteOG([]byte(loginHead), r)) + `</head><body>
 <h1>Console token</h1>` + msg + `
 <form method="post" action="/console/login"><label>Token <input name="token" type="password" autocomplete="current-password"></label>
 <button type="submit">Open console</button></form></body></html>`))
