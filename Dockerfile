@@ -16,6 +16,8 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 COPY --from=console /src/console/dist/index.html ./internal/httpserver/console.html
+# Public assets (manifest, service worker, icons, favicon, OG image).
+COPY --from=console /src/console/public/ ./internal/httpserver/pwa/
 ENV CGO_ENABLED=1
 RUN go build -trimpath -ldflags="-s -w" -o /out/brc29-loadgen ./cmd/brc29-loadgen
 

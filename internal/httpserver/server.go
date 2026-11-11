@@ -47,6 +47,9 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /healthz", s.health)
 	mux.HandleFunc("GET /readyz", s.ready)
 	mux.HandleFunc("GET /metrics", s.metrics)
+	for _, name := range pwaAssets {
+		mux.HandleFunc("GET /"+name, pwaAsset(name))
+	}
 	return mux
 }
 

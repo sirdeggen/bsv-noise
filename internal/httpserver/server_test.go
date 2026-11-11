@@ -173,3 +173,58 @@ func TestConsoleTokenGatesPageAndStats(t *testing.T) {
 		t.Fatalf("cookie did not open console: %d", opened.StatusCode)
 	}
 }
+
+func TestPWAAssetsArePublicEvenWithConsoleToken(t *testing.T) {
+	srv := httptest.NewServer((&Server{ConsoleToken: "console-secret"}).Handler())
+	defer srv.Close()
+	want := map[string]string{
+		"/manifest.webmanifest": "application/manifest+json",
+		"/sw.js":                "text/javascript; charset=utf-8",
+		"/icon.svg":             "image/svg+xml",
+		"/icon-192.png":         "image/png",
+		"/icon-512.png":         "image/png",
+	}
+	for p, ctype := range want {
+		resp, err := http.Get(srv.URL + p)
+		if err != nil {
+			t.Fatal(err)
+		}
+		body, _ := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		if resp.StatusCode != http.StatusOK || len(body) == 0 {
+			t.Fatalf("%s: status %d, %d bytes", p, resp.StatusCode, len(body))
+		}
+		if got := resp.Header.Get("Content-Type"); got != ctype {
+			t.Fatalf("%s: content-type %q", p, got)
+		}
+	}
+}
+
+func TestOGImageIsAbsoluteAndHostIsSanitised(t *testing.T) {
+	h := (&Server{Stats: func() (Stats, error) { return sampleStats(), nil }}).Handler()
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req.Host = "noise.example.com"
+	req.Header.Set("X-Forwarded-Proto", "https")
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if !strings.Contains(rec.Body.String(), `content="https://noise.example.com/og.jpg"`) {
+		t.Fatal("og:image was not made absolute")
+	}
+
+	evil := httptest.NewRequest(http.MethodGet, "/", nil)
+	evil.Host = `x"><script>alert(1)</script>`
+	rec = httptest.NewRecorder()
+	h.ServeHTTP(rec, evil)
+	if strings.Contains(rec.Body.String(), "<script>alert(1)") {
+		t.Fatal("host header was reflected into the page")
+	}
+
+	gated := (&Server{ConsoleToken: "secret"}).Handler()
+	req = httptest.NewRequest(http.MethodGet, "/", nil)
+	req.Host = "noise.example.com"
+	rec = httptest.NewRecorder()
+	gated.ServeHTTP(rec, req)
+	if !strings.Contains(rec.Body.String(), `content="http://noise.example.com/og.jpg"`) {
+		t.Fatal("login page is missing the absolute og:image")
+	}
+}
